@@ -1,23 +1,36 @@
 module modulo_counter( 
     input clk, en, sel, 
 
-    output [2:0]Q,
-    output modCountOut[2:0]
+    output Y[2:0],
+    output [2:0]modCountOut
 );
+
+//just do and gates
 
 //second attempt using dff, fa, and comparator
 
 wire [2:0]Q;
-wire modOut[2:0];
+wire [2:0]modOut;
 
-//TODO: figure out why modOut can't be accessed directly
 three_bit_cmp cmp (.in0(Q[0]),.in1(Q[1]),.in2(Q[2]), .out0(Q[0]),.out1(Q[1]),.out2(Q[2]), .modOut(modOut));
 
-full_adder fa0 (.A(Q[0]), .B(en), .Cin(0), .Cout);
+assign modOutCount = modOut; //data needed to be stored after each count 
 
-//full_adder fa0 ();
+wire [1:0]carry;
 
-//full_adder fa0 ();
+full_adder fa0 (.A(Q[0]), .B(en), .Cin(0), .Cout(carry[0]), .Y(D[0]));
+full_adder fa1 (.A(Q[1]), .B(en), .Cin(carry[0]), .Cout(carry[1]), .Y(D[1]));
+full_adder fa2 (.A(Q[0]), .B(en), .Cin(carry[1]), .Y(D[2])); //don't do anything with last carry out ig .Cout(carry[0])
+
+
+//3 sets of dffs
+wire [2:0]D;
+
+d_flipflop dff0 (.data(D[0]), .store(1'b1), .memory(Q[0]));
+d_flipflop dff1 (.data(D[1]), .store(1'b1), .memory(Q[1]));
+d_flipflop dff2 (.data(D[2]), .store(1'b1), .memory(Q[2]));
+
+
 
 
 
@@ -57,32 +70,34 @@ full_adder fa0 (.A(Q[0]), .B(en), .Cin(0), .Cout);
 //assign
 endmodule
 
-module three_bit_cmp ( //sends reset (0) signal if it matches 110 (6) and prints back out current count if no match
-    input in0, in1, in2,
-    output reg out0, out1, out2,
-    output reg modOut[2:0]
-);
+//module three_bit_cmp ( //sends reset (0) signal if it matches 110 (6) and prints back out current count if no match
+//    input in0, in1, in2,
+//    output reg out0, out1, out2,
+//    output reg [2:0] modOut
+//);
 
-always @ (in1, in2) begin //just check the last 2 bits
-    if (in2 && in1) begin //if both eval to 1 then send reset signal to output
-        out0 <= 1'b0;
-        out1 <= 1'b0;
-        out2 <= 1'b0;
+//always @ (in1, in2) begin //just check the last 2 bits
+//    if (in2 && in1) begin //if both eval to 1 then send reset signal to output
+//        out0 <= 1'b0;
+//        out1 <= 1'b0;
+//        out2 <= 1'b0;
         
-        //send out to store reset
-        modOut[0] <= 1'b0;
-        modOut[1] <= 1'b0;
-        modOut[2] <= 1'b0;
+//        //send out to store reset
+//        modOut[0] <= 1'b0;
+//        modOut[1] <= 1'b0;
+//        modOut[2] <= 1'b0;
 
-    end else begin //else send signal back out
-        out0 <= in0;
-        out1 <= in1;
-        out2 <= in2;
+//    end else begin //else send signal back out
+//        out0 <= in0;
+//        out1 <= in1;
+//        out2 <= in2;
         
-        //send out to store current count
-        modOut[0] <= in0;
-        modOut[1] <= in1;
-        modOut[2] <= in2;
-    end
-end
-endmodule
+//        //send out to store current count
+//        modOut[0] <= in0;
+//        modOut[1] <= in1;
+//        modOut[2] <= in2;
+//    end
+//end
+//endmodule
+
+
