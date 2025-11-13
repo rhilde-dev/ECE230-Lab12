@@ -1,11 +1,11 @@
 module top (
     input btnU, //reset
     input btnC, //input clk
-    output led[6:0]
+    output [6:0]led
 );
 
-ripple_counter rc ();
+//ripple_counter rc ();
 
-modulo_counter mc (.clk(btnC), .en(1'b1), .sel(btnU), .Q[2:0](.led[5:3]));
+modulo_counter mc (.clk(btnC), .en(1'b1), .sel(btnU), .Q0(led[3]), .Q1(led[4]), .Q2(led[5]));
 
 endmodule
