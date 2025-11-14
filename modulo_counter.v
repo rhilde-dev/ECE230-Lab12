@@ -1,39 +1,79 @@
 module modulo_counter( 
     input clk, reset, 
     output [2:0]Y,
-    output [2:0]modCountOut
+    output modCountOut
 );
+
+wire [2:0] D; //The data going into the register
+wire [2:0] state; //Either send 3'b000 or the D data
+
+assign state = (reset) ? 3'b000 : ((Q[2] && Q[0]) ? 3'b000 : D);
+
+//3 bit register
+d_flipflop dff0 (.data(state[0]), .reset(reset), .store(clk), .memory(Q[0]));
+d_flipflop dff1 (.data(state[1]), .reset(reset), .store(clk), .memory(Q[1]));
+d_flipflop dff2 (.data(state[2]), .reset(reset), .store(clk), .memory(Q[2]));
+
+wire [2:0] Q; //Output of the register
+wire [1:0]carry; //Cout going to each FA
+
+//3 bit FA
+full_adder fa0 (.A(Q[0]), .B(1'b1), .Cin(0), .Cout(carry[0]), .Y(D[0]));
+full_adder fa1 (.A(Q[1]), .B(1'b0), .Cin(carry[0]), .Cout(carry[1]), .Y(D[1]));
+full_adder fa2 (.A(Q[2]), .B(1'b0), .Cin(carry[1]), .Y(D[2])); //don't do anything with last carry out ig .Cout(carry[0])
+
+wire toggle;
+assign toggle = Q[0] & Q[2];
+
+t_flipflop tff (.t(toggle), .store(clk), .memory(modCountOut)); //tff at the end
+
+endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //second attempt using dff, fa, and comparator
 
-wire [2:0]Q;
-wire [2:0]modOut;
+//wire [2:0]Q;
+//wire [2:0]modOut;
 
-wire cmp;
+//wire cmp;
 
-assign cmp = (Q == 3'b101); //five is 0101 in binary
+//assign cmp = (Q == 3'b101); //five is 0101 in binary
 
-assign modOutCount = modOut; //data needed to be stored after each count 
+//assign modOutCount = modOut; //data needed to be stored after each count 
 
-//d_flipflop (.data()); make dff to store data from comparator
+////d_flipflop (.data()); make dff to store data from comparator
 
-wire [1:0]carry;
+//wire [1:0]carry;
 
-full_adder fa0 (.A(Q[0]), .B(1'b1), .Cin(0), .Cout(carry[0]), .Y(D[0]));
-full_adder fa1 (.A(Q[1]), .B(1'b0), .Cin(carry[0]), .Cout(carry[1]), .Y(D[1]));
-full_adder fa2 (.A(Q[0]), .B(1'b0), .Cin(carry[1]), .Y(D[2])); //don't do anything with last carry out ig .Cout(carry[0])
+//full_adder fa0 (.A(Q[0]), .B(1'b1), .Cin(0), .Cout(carry[0]), .Y(D[0]));
+//full_adder fa1 (.A(Q[1]), .B(1'b0), .Cin(carry[0]), .Cout(carry[1]), .Y(D[1]));
+//full_adder fa2 (.A(Q[0]), .B(1'b0), .Cin(carry[1]), .Y(D[2])); //don't do anything with last carry out ig .Cout(carry[0])
 
 
-//3 sets of dffs
-wire [2:0]D; //output of fa and input of dff
+////3 sets of dffs
+//wire [2:0]D; //output of fa and input of dff
 
-wire [2:0] state;
+//wire [2:0] state;
 
-assign state = (reset) ? 3'b000 : (cmp ? 3'b000 : D);
+//assign state = (reset) ? 3'b000 : (cmp ? 3'b000 : D);
 
-d_flipflop dff0 (.data(state[0]), .reset(reset), .store(1'b1), .memory(Q[0]));
-d_flipflop dff1 (.data(state[1]), .reset(reset), .store(1'b1), .memory(Q[1]));
-d_flipflop dff2 (.data(state[2]), .reset(reset), .store(1'b1), .memory(Q[2]));
+//d_flipflop dff0 (.data(state[0]), .reset(reset), .store(1'b1), .memory(Q[0]));
+//d_flipflop dff1 (.data(state[1]), .reset(reset), .store(1'b1), .memory(Q[1]));
+//d_flipflop dff2 (.data(state[2]), .reset(reset), .store(1'b1), .memory(Q[2]));
 
 //load enabled sync counter attempt 1
 
@@ -69,7 +109,7 @@ d_flipflop dff2 (.data(state[2]), .reset(reset), .store(1'b1), .memory(Q[2]));
 //assign Q2 = dOut[2];
 
 //assign
-endmodule
+//endmodule
 
 //module three_bit_cmp ( //sends reset (0) signal if it matches 110 (6) and prints back out current count if no match
 //    input in0, in1, in2,
