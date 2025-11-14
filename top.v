@@ -4,8 +4,8 @@ module top (
     output [6:0]led
 );
 
-//ripple_counter rc ();
+ripple_counter rc (.clk(btnC), .reset(btnU), .q(led[2:0]));
 
-modulo_counter mc (.clk(btnC), .en(1'b1), .sel(btnU), .Y[0](led[3]), .Y[1](led[4]), .Y[2](led[5]));
+modulo_counter mc (.clk(btnC), .reset(btnU), .Y(led[5:3]), .modCountOut(led[6]));
 
 endmodule
